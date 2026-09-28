@@ -727,3 +727,8 @@ body.pub-tip .pb-body, body.pub-tip .pb-body a { color: #fbe4e1; }
 .tip-bank { display: inline-block; background: #1f5a2e; color: #fbe4e1; padding: 10px 16px; margin-bottom: 10px; border: 3px solid var(--ink); }
 .tip-bank small { display: block; font: 600 10px/1 Oswald, sans-serif; letter-spacing: .2em; text-transform: uppercase; } .tip-bank b { font: 700 32px/1.1 Oswald, sans-serif; }
 .tip-picks { display: flex; gap: 14px; align-items: flex-start; }
+/* the page counter wears its own dark tag, so it reads on every paper and every cover */
+.pager .where, body.on-cover .pager .where { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; margin: 0 auto; padding: 5px 14px 6px;
+  border-radius: 14px; background: rgba(22,15,10,.86) !important; color: #f5eedb !important; box-shadow: 0 2px 6px rgba(0,0,0,.35); }
+.pager .dots button, body.on-cover .pager .dots button { border-color: #f5eedb !important; background: transparent; }
+.pager .dots button.on, body.on-cover .pager .dots button.on { background: #f5eedb !important; }

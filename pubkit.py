@@ -71,3 +71,31 @@ def archive_page(site, css_path, cls, paper, sub, items_html, icon="📰"):
     body = ('%s<main class="paper"><div class="box arch"><h2>%s</h2><ul class="archive">%s</ul></div></main>'
             % (topbar("Back Issues", sub, icon), e(paper), items_html or "<li>None yet.</li>"))
     open(os.path.join(site, "archive.html"), "w").write(shell("%s — Back Issues" % paper, body, css_path, "stand " + cls))
+
+
+def draw_image(out, prompt, size="1024x1536", max_px=1300):
+    """Draw cover art once with the Codex image model (gpt-image-2 on the agents' ChatGPT login); returns True when the file exists."""
+    if os.path.exists(out):
+        return True
+    import base64, importlib.util, io, sys
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    sys.path.insert(0, os.path.join(HERMES, "hermes-agent"))
+    spec = importlib.util.spec_from_file_location("cx", os.path.join(HERMES, "hermes-agent", "plugins", "image_gen", "openai-codex", "__init__.py"))
+    cx = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cx)
+    token = cx._read_codex_access_token()
+    try:
+        b64 = cx._collect_image_b64(token, prompt=prompt, size=size, quality="medium") if token else None
+    except Exception:
+        b64 = None
+    if not b64:
+        return False
+    from PIL import Image
+    im = Image.open(io.BytesIO(base64.b64decode(b64))).convert("RGB")
+    im.thumbnail((max_px, max_px))
+    im.save(out, "JPEG", quality=86, optimize=True, progressive=True)
+    return True
+
+
+SEASONS = {12: "early winter snow", 1: "deep winter snow", 2: "late-winter snow and ice", 3: "mud season thaw", 4: "early spring green-up", 5: "fresh spring green",
+           6: "early summer green", 7: "high summer", 8: "late summer", 9: "early autumn color", 10: "peak autumn foliage", 11: "late autumn, bare trees and golden grass"}

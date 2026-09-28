@@ -8,7 +8,7 @@ Usage: serve.py <site_dir> <host> <port>
 import datetime as dt, os, sys
 
 import gardenweb as gw
-from gardenweb import jload, jsave, LOCK
+from gardenweb import jload, jsave, LOCK, wallet_tx
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 WALLET = os.path.join(ROOT, "private", "wallet.json")
@@ -19,7 +19,7 @@ class Handler(gw.Handler):
 
     def get_api(self, p):
         if p == "/api/wallet":
-            self.json(200, jload(WALLET, {"balance": 1000, "bets": []}))
+            self.json(200, wallet_tx(lambda w: dict(w)))
             return True
 
     def post_api(self, p):
@@ -37,15 +37,16 @@ class Handler(gw.Handler):
         if now.date().isoformat() != date or now.strftime("%H:%M") > card.get("closes", "22:45"):
             self.json(200, {"ok": False, "message": "Lines are closed for this card — tomorrow night's card opens at 9:30 PM."})
             return True
-        with LOCK:
-            w = jload(WALLET, {"balance": 1000, "bets": []})
+        def place(w):
             if w["balance"] < stake:
-                self.json(200, {"ok": False, "message": "Not enough Garden Bucks for that one."})
-                return True
+                return False
             w["balance"] -= stake
             w["bets"].append({"date": date, "market": mk, "market_title": m["title"], "option": opt, "label": o["label"], "odds": o["odds"],
                               "stake": stake, "status": "open", "at": now.isoformat(timespec="seconds")})
-            jsave(WALLET, w)
+            return True
+        if not wallet_tx(place):
+            self.json(200, {"ok": False, "message": "Not enough Garden Bucks for that one."})
+            return True
         self.json(200, {"ok": True, "message": "Slip placed: %d on %s at %d-%d. Good luck!" % (stake, o["label"], o["odds"][0], o["odds"][1])})
         return True
 

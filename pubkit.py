@@ -99,3 +99,23 @@ def draw_image(out, prompt, size="1024x1536", max_px=1300):
 
 SEASONS = {12: "early winter snow", 1: "deep winter snow", 2: "late-winter snow and ice", 3: "mud season thaw", 4: "early spring green-up", 5: "fresh spring green",
            6: "early summer green", 7: "high summer", 8: "late summer", 9: "early autumn color", 10: "peak autumn foliage", 11: "late autumn, bare trees and golden grass"}
+
+
+def wallet_tx(fn):
+    """The shared Garden Bucks wallet (see gardenweb.wallet_tx) — edited under the same file lock."""
+    import fcntl
+    w_path = os.path.join(GARDEN, "tip-sheet", "private", "wallet.json")
+    os.makedirs(os.path.dirname(w_path), exist_ok=True)
+    with open(w_path + ".lock", "w") as lk:
+        fcntl.flock(lk, fcntl.LOCK_EX)
+        w = load(w_path, {"balance": 1000, "bets": []})
+        out = fn(w)
+        save(w_path, w)
+        return out
+
+
+# Clydius as he really is (from his MyPetID photos) — every drawing of him uses this
+CLYDE = ("CLYDIUS, a 2-year-old American Staffordshire Terrier: lean, athletic and fairly tall with long legs (not stocky or bulky), "
+         "a short glossy red-fawn/copper coat with faint darker brindle striping, a red-brown (liver) nose, amber-hazel eyes, a broad head "
+         "with a softly wrinkled brow, half-folded rose ears that tip outward, a white blaze down his chest and white toes on his front paws, "
+         "wearing a gray-green camouflage collar with a black bone-shaped ID tag")

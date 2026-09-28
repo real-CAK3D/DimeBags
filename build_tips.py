@@ -105,22 +105,23 @@ def settle(date):
     res["dark"] = "yes" if dark else "no"
     pk.save(os.path.join(ROOT, "data", "results-%s.json" % date), res)
     # pay out CAK3D's slips
-    wallet = pk.load(os.path.join(ROOT, "private", "wallet.json"), {"balance": 1000, "bets": []})
-    won = lost = 0
-    for b in wallet["bets"]:
-        if b.get("status") != "open" or b.get("date") != date or b["market"] not in res:
-            continue
-        if b["option"] == res[b["market"]]:
-            pay_out = round(b["stake"] + b["stake"] * b["odds"][0] / b["odds"][1])
-            b.update(status="won", payout=pay_out)
-            wallet["balance"] += pay_out
-            won += pay_out - b["stake"]
-        else:
-            b.update(status="lost", payout=0)
-            lost += b["stake"]
-    pk.save(os.path.join(ROOT, "private", "wallet.json"), wallet)
+    def settle_slips(wallet):
+        won = lost = 0
+        for b in wallet["bets"]:
+            if b.get("status") != "open" or b.get("date") != date or b["market"] not in res:
+                continue
+            if b["option"] == res[b["market"]]:
+                pay_out = round(b["stake"] + b["stake"] * b["odds"][0] / b["odds"][1])
+                b.update(status="won", payout=pay_out)
+                wallet["balance"] += pay_out
+                won += pay_out - b["stake"]
+            else:
+                b.update(status="lost", payout=0)
+                lost += b["stake"]
+        return won, lost, wallet["balance"]
+    won, lost, balance = pk.wallet_tx(settle_slips)   # the wallet is shared with The Corner Chronicle's seed counter
     if won or lost:
-        pk.notify("🏇 Dime Bags settled", "Last night: %s%d Garden Bucks. Balance: %d." % ("+" if won >= lost else "-", abs(won - lost), wallet["balance"]), "/dime-bags/")
+        pk.notify("🏇 Dime Bags settled", "Last night: %s%d Garden Bucks. Balance: %d." % ("+" if won >= lost else "-", abs(won - lost), balance), "/dime-bags/")
     return res
 
 

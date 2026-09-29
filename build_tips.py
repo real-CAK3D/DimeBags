@@ -119,7 +119,7 @@ def settle(date):
                 b.update(status="lost", payout=0)
                 lost += b["stake"]
         return won, lost, wallet["balance"]
-    won, lost, balance = pk.wallet_tx(settle_slips)   # the wallet is shared with The Corner Chronicle's seed counter
+    won, lost, balance = pk.wallet_tx(settle_slips, "Dime Bags payout %s" % date)   # the wallet is shared with The Corner Chronicle's seed counter
     if won or lost:
         pk.notify("🏇 Dime Bags settled", "Last night: %s%d Garden Bucks. Balance: %d." % ("+" if won >= lost else "-", abs(won - lost), balance), "/dime-bags/")
     return res

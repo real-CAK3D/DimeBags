@@ -44,7 +44,7 @@ class Handler(gw.Handler):
             w["bets"].append({"date": date, "market": mk, "market_title": m["title"], "option": opt, "label": o["label"], "odds": o["odds"],
                               "stake": stake, "status": "open", "at": now.isoformat(timespec="seconds")})
             return True
-        if not wallet_tx(place):
+        if not wallet_tx(place, "Dime Bags slip: %s" % o["label"]):
             self.json(200, {"ok": False, "message": "Not enough Garden Bucks for that one."})
             return True
         self.json(200, {"ok": True, "message": "Slip placed: %d on %s at %d-%d. Good luck!" % (stake, o["label"], o["odds"][0], o["odds"][1])})
